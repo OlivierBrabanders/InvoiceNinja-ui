@@ -194,18 +194,24 @@ export function ConnectAccounts() {
               </div>
 
               <div
-                className="flex items-center justify-center space-x-2 text-xs pb-3"
+                className="flex flex-col items-center justify-center space-y-1 text-xs pb-3"
                 onClick={(event) => event.stopPropagation()}
               >
-                <p className="text-gray-500">{t('enableBanking_regions')}.</p>
+                <div className="flex items-center justify-center space-x-2">
+                  <p className="text-gray-500">{t('enableBanking_regions')}.</p>
 
-                <Link
-                  className="text-xs"
-                  to="https://enablebanking.com/open-banking-apis"
-                  external
-                >
-                  {t('learn_more')}.
-                </Link>
+                  <Link
+                    className="text-xs"
+                    to="https://enablebanking.com/open-banking-apis"
+                    external
+                  >
+                    {t('learn_more')}.
+                  </Link>
+                </div>
+
+                {isSelfHosted() && (
+                  <p className="text-gray-500">{t('enablebanking_help')}.</p>
+                )}
               </div>
             </div>
           )}
