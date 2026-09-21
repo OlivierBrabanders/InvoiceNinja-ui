@@ -21,6 +21,7 @@ import { useAccentColor } from '$app/common/hooks/useAccentColor';
 import { Button, Link } from '$app/components/forms';
 import { Icon } from '$app/components/icons/Icon';
 import { Modal } from '$app/components/Modal';
+import enableBankingLogo from '/dap-logos/enableBanking.svg';
 import goCardlessLogo from '/dap-logos/goCardless.png';
 import yodleeLogo from '/dap-logos/yodlee.svg';
 
@@ -32,7 +33,9 @@ export function ConnectAccounts() {
 
   const divRef = useRef<HTMLDivElement>(null);
 
-  const [account, setAccount] = useState<'yodlee' | 'nordigen'>();
+  const [account, setAccount] = useState<
+    'yodlee' | 'nordigen' | 'enablebanking'
+  >();
   const [isModalVisible, setIsModalVisible] = useState<boolean>(false);
 
   useClickAway(divRef, () => {
@@ -74,6 +77,21 @@ export function ConnectAccounts() {
     });
   };
 
+  const handleConnectEnableBanking = () => {
+    request('POST', endpoint('/api/v1/one_time_token'), {
+      context: 'enablebanking',
+      platform: 'react',
+    }).then((tokenResponse) => {
+      handleClose();
+
+      window.open(
+        endpoint('/enablebanking/connect/:hash', {
+          hash: tokenResponse?.data?.hash,
+        })
+      );
+    });
+  };
+
   const handleConnectAccount = () => {
     if (account === 'yodlee') {
       handleConnectYodlee();
@@ -82,16 +100,15 @@ export function ConnectAccounts() {
     if (account === 'nordigen') {
       handleConnectNordigen();
     }
+
+    if (account === 'enablebanking') {
+      handleConnectEnableBanking();
+    }
   };
 
   return (
     <>
-      <Button
-        type="secondary"
-        onClick={() =>
-          isSelfHosted() ? handleConnectNordigen() : setIsModalVisible(true)
-        }
-      >
+      <Button type="secondary" onClick={() => setIsModalVisible(true)}>
         <span className="mr-2">{<Icon element={MdLink} size={20} />}</span>
         {t('connect_accounts')}
       </Button>
@@ -102,7 +119,7 @@ export function ConnectAccounts() {
         onClose={handleClose}
       >
         <div ref={divRef} className="flex flex-col space-y-6">
-          {enterprisePlan() && (
+          {!isSelfHosted() && enterprisePlan() && (
             <div
               className="flex flex-col cursor-pointer border-4"
               style={{
@@ -153,6 +170,38 @@ export function ConnectAccounts() {
                 <Link
                   className="text-xs"
                   to="https://gocardless.com/bank-account-data/coverage/"
+                  external
+                >
+                  {t('learn_more')}.
+                </Link>
+              </div>
+            </div>
+          )}
+
+          {enterprisePlan() && (
+            <div
+              data-cy="enableBankingBox"
+              className="flex flex-col items-center cursor-pointer border-4"
+              style={{
+                borderColor:
+                  account === 'enablebanking' ? accentColor : colors.$24,
+                height: '10.25rem',
+              }}
+              onClick={() => setAccount('enablebanking')}
+            >
+              <div className="flex flex-1 items-center justify-center">
+                <img src={enableBankingLogo} style={{ width: '15rem' }} />
+              </div>
+
+              <div
+                className="flex items-center justify-center space-x-2 text-xs pb-3"
+                onClick={(event) => event.stopPropagation()}
+              >
+                <p className="text-gray-500">{t('enableBanking_regions')}.</p>
+
+                <Link
+                  className="text-xs"
+                  to="https://enablebanking.com/open-banking-apis"
                   external
                 >
                   {t('learn_more')}.
